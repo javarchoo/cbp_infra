@@ -1,0 +1,405 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template deploys EC2 instances for SK Telecom Cloud Biz Platform.
+
+Mappings:
+  AWSRegionOSAMI:
+    ap-northeast-2:
+      Centos7:    ami-06e83aceba2cb0907
+      AmznLinux2: ami-0db78afd3d150fc18
+  InstanceTypeByGroup:
+    dev:
+      Web:       m5.large
+      Was:       m5.xlarge
+      Db:        db.m5.large
+      Master:    r5.large
+      Query:     r5.xlarge
+      Data:      i3.large
+      Zookeeper: t3.micro
+      Bastion:   t3.micro     
+    stage:
+      Web:       m5.large
+      Was:       m5.xlarge
+      Db:        db.m5.large
+      Master:    r5.large
+      Query:     r5.xlarge
+      Data:      i3.large
+      Zookeeper: t3.micro
+      Bastion:   t3.micro
+    prod:
+      Web:       m5.xlarge
+      Was:       m5.2xlarge
+      Db:        db.m5.xlarge
+      Master:    r5.xlarge
+      Query:     r5.2xlarge
+      Data:      i3.4xlarge
+      Zookeeper: t3.micro
+      Bastion:   t3.micro
+
+Parameters:
+  NetworkStackName:
+    Description: Name of an active CloudFormation stack that contains the networking resources, such as the subnet and security group, that will be used in this stack.
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern : "^[a-zA-Z][-a-zA-Z0-9]*$"
+    Default: "cbp-vpc"
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair
+      
+Resources:
+  Web1:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Web ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-PublicSubnet1"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["SSHSecurityGroup", "GroupId"] 
+      - Fn::GetAtt: ["WebSecurityGroup", "GroupId"]
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: Web1
+
+  Web2:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Web ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-PublicSubnet2"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["SSHSecurityGroup", "GroupId"]
+      - Fn::GetAtt: ["WebSecurityGroup", "GroupId"]
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true      
+      Tags:
+      - Key: Name
+        Value: Web2
+
+  Was1:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Was ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-WasSubnet1"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["InternalSecurityGroup", "GroupId"] 
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: Was1
+
+  Was2:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Was ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-WasSubnet2"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["InternalSecurityGroup", "GroupId"]
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true       
+      Tags:
+      - Key: Name
+        Value: Was2
+
+  Master1:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Master ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-MetatronSubnet1"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["InternalSecurityGroup", "GroupId"] 
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: Master1
+
+  Master2:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Master ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-MetatronSubnet2"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["InternalSecurityGroup", "GroupId"] 
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: Master2
+
+  Query1:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Query ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-MetatronSubnet1"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["InternalSecurityGroup", "GroupId"] 
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: Query1
+
+  Query2:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Query ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-MetatronSubnet2"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["InternalSecurityGroup", "GroupId"] 
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: Query2
+
+  Data1:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Data ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-MetatronSubnet1"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["InternalSecurityGroup", "GroupId"] 
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: Data1
+
+  Data2:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Data ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-MetatronSubnet2"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["InternalSecurityGroup", "GroupId"] 
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: Data2
+
+  Data3:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Data ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-MetatronSubnet3"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["InternalSecurityGroup", "GroupId"] 
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: Data3
+
+  Zookeeper1:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Zookeeper ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-MetatronSubnet1"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["InternalSecurityGroup", "GroupId"] 
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: Zookeeper1
+
+  Zookeeper2:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Zookeeper ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-MetatronSubnet2"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["InternalSecurityGroup", "GroupId"] 
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: Zookeeper2
+
+  Zookeeper3:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [ AWSRegionOSAMI, !Ref 'AWS::Region', Centos7 ] 
+      InstanceType: !FindInMap [ InstanceTypeByGroup, stage, Zookeeper ] 
+      SubnetId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-MetatronSubnet3"
+      SecurityGroupIds: 
+      - Fn::GetAtt: ["InternalSecurityGroup", "GroupId"] 
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 20
+          DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: Zookeeper3
+
+  WebSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Allow http to client host
+      VpcId: 
+        Fn::ImportValue: !Sub "${NetworkStackName}-VPC"
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+
+  SSHSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      VpcId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-VPC"
+      SecurityGroupIngress:
+      - CidrIp: 222.106.148.236/32
+        IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+
+  InternalSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: All TCP allow for internal traffic
+      VpcId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-VPC"
+      SecurityGroupIngress:
+      - SourceSecurityGroupId: !Ref SSHSecurityGroup
+        IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+
+  InternalSGIngress:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      GroupId: !Ref InternalSecurityGroup
+      IpProtocol: tcp
+      FromPort: 1
+      ToPort: 65535
+      SourceSecurityGroupId: !Ref InternalSecurityGroup
+
+  MySQLSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Enable MySQL DB access via port 3306
+      VpcId:
+        Fn::ImportValue: !Sub "${NetworkStackName}-VPC"
+      SecurityGroupIngress:
+      - SourceSecurityGroupId: !Ref InternalSecurityGroup
+        IpProtocol: tcp
+        FromPort: 3306
+        ToPort: 3306
+        
+  CbpDBSubnetGroup: 
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties: 
+      DBSubnetGroupName: CbpDBSubnetGroup
+      DBSubnetGroupDescription: Cbp DB Subnet Group
+      SubnetIds: 
+      - Fn::ImportValue: !Sub "${NetworkStackName}-DbSubnet1"
+      - Fn::ImportValue: !Sub "${NetworkStackName}-DbSubnet2"
+      
+  CbpDB: 
+    Type: "AWS::RDS::DBInstance"
+    DeletionPolicy: Snapshot
+    Properties: 
+      AllocatedStorage: 100
+      StorageType: gp2
+      DBInstanceClass: !FindInMap [ InstanceTypeByGroup, stage, Db ]
+      DBName: "cbpdb"
+      DBInstanceIdentifier: "cbpdb"
+      DBSubnetGroupName: !Ref CbpDBSubnetGroup
+      Engine: MySQL
+#      EngineVersion: "5.7.26"
+      MasterUsername: "admin"
+      MasterUserPassword: "zXc6BjCbp"
+      VPCSecurityGroups:
+       - !Ref MySQLSecurityGroup
+      Tags: 
+       - Key: Name
+         Value: "Metatron Metadata Store"

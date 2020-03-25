@@ -1,0 +1,442 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template deploys a VPC for SK Telecom Cloud Biz Platform with two public subnets, 
+  and private subnets including web, was, db, metatron subnets. 
+
+Parameters:
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.0.0.0/16
+
+  PublicSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
+    Type: String
+    Default: 10.0.1.0/24
+
+  PublicSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the second Availability Zone
+    Type: String
+    Default: 10.0.2.0/24
+
+  WebSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the web subnet in the first Availability Zone
+    Type: String
+    Default: 10.0.11.0/24
+
+  WebSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the web subnet in the second Availability Zone
+    Type: String
+    Default: 10.0.12.0/24
+
+  WasSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the web subnet in the first Availability Zone
+    Type: String
+    Default: 10.0.21.0/24
+
+  WasSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the web subnet in the second Availability Zone
+    Type: String
+    Default: 10.0.22.0/24
+
+  DbSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the web subnet in the first Availability Zone
+    Type: String
+    Default: 10.0.31.0/24
+
+  DbSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the web subnet in the second Availability Zone
+    Type: String
+    Default: 10.0.32.0/24
+
+  MetatronSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the web subnet in the first Availability Zone
+    Type: String
+    Default: 10.0.41.0/24
+
+  MetatronSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the web subnet in the second Availability Zone
+    Type: String
+    Default: 10.0.42.0/24
+    
+  MetatronSubnet3CIDR:
+    Description: Please enter the IP range (CIDR notation) for the web subnet in the third Availability Zone
+    Type: String
+    Default: 10.0.43.0/24
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      CidrBlock: !Ref PublicSubnet1CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      CidrBlock: !Ref PublicSubnet2CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet (AZ2)
+
+  WebSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      CidrBlock: !Ref WebSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Web Subnet (AZ1)
+
+  WebSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      CidrBlock: !Ref WebSubnet2CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Web Subnet (AZ2)
+
+  WasSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      CidrBlock: !Ref WasSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} WAS Subnet (AZ1)
+
+  WasSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      CidrBlock: !Ref WasSubnet2CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} WAS Subnet (AZ2)
+
+  DbSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      CidrBlock: !Ref DbSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} DB Subnet (AZ1)
+
+  DbSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      CidrBlock: !Ref DbSubnet2CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} DB Subnet (AZ2)
+
+  MetatronSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      CidrBlock: !Ref MetatronSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Metatron Subnet (AZ1)
+
+  MetatronSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      CidrBlock: !Ref MetatronSubnet2CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Metatron Subnet (AZ2)
+
+  MetatronSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [2, !GetAZs ""]
+      CidrBlock: !Ref MetatronSubnet3CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Metatron Subnet (AZ3)
+
+  NatGateway1EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+#  NatGateway2EIP:
+#    Type: AWS::EC2::EIP
+#    DependsOn: InternetGatewayAttachment
+#    Properties:
+#      Domain: vpc
+
+  NatGateway1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway1EIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+
+#  NatGateway2:
+#    Type: AWS::EC2::NatGateway
+#    Properties:
+#      AllocationId: !GetAtt NatGateway2EIP.AllocationId
+#      SubnetId: !Ref PublicSubnet2
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Routes
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
+
+  PrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Routes (AZ1)
+
+  DefaultPrivateRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1
+
+  WebSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref WebSubnet1
+
+  WasSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref WasSubnet1
+
+  DbSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref DbSubnet1
+
+  MetatronSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref MetatronSubnet1
+
+#  PrivateRouteTable2:
+#    Type: AWS::EC2::RouteTable
+#    Properties:
+#      VpcId: !Ref VPC
+#      Tags:
+#        - Key: Name
+#          Value: !Sub ${EnvironmentName} Private Routes (AZ2)
+
+#  DefaultPrivateRoute2:
+#    Type: AWS::EC2::Route
+#    Properties:
+#      RouteTableId: !Ref PrivateRouteTable2
+#      DestinationCidrBlock: 0.0.0.0/0
+#      NatGatewayId: !Ref NatGateway2
+
+  WebSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref WebSubnet2
+
+  WasSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref WasSubnet2
+
+  DbSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref DbSubnet2
+
+  MetatronSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref MetatronSubnet2
+
+  MetatronSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref MetatronSubnet3
+
+Outputs:
+  VPC:
+    Description: A reference to the created VPC
+    Value: !Ref VPC
+    Export: 
+      Name: !Sub "${AWS::StackName}-VPC"
+
+  PublicSubnets:
+    Description: A list of the public subnets
+    Value: !Join [",", [!Ref PublicSubnet1, !Ref PublicSubnet2]]
+
+  WebSubnets:
+    Description: A list of the Web private subnets
+    Value: !Join [",", [!Ref WebSubnet1, !Ref WebSubnet2]]
+
+  WasSubnets:
+    Description: A list of the Was private subnets
+    Value: !Join [",", [!Ref WasSubnet1, !Ref WasSubnet2]]
+    
+  DbSubnets:
+    Description: A list of the DB private subnets
+    Value: !Join [",", [!Ref DbSubnet1, !Ref DbSubnet2]]
+    
+  MetatronSubnets:
+    Description: A list of the Metatron private subnets
+    Value: !Join [",", [!Ref MetatronSubnet1, !Ref MetatronSubnet2, !Ref MetatronSubnet3]]
+
+  PublicSubnet1:
+    Description: A reference to the public subnet in the 1st Availability Zone
+    Value: !Ref PublicSubnet1
+    Export: 
+      Name: !Sub "${AWS::StackName}-PublicSubnet1"
+
+  PublicSubnet2:
+    Description: A reference to the public subnet in the 2nd Availability Zone
+    Value: !Ref PublicSubnet2
+    Export: 
+      Name: !Sub "${AWS::StackName}-PublicSubnet2"
+      
+  WebSubnet1:
+    Description: A reference to the Web private subnet in the 1st Availability Zone
+    Value: !Ref WebSubnet1
+    Export: 
+      Name: !Sub "${AWS::StackName}-WebSubnet1"
+
+  WebSubnet2:
+    Description: A reference to the Web private subnet in the 2nd Availability Zone
+    Value: !Ref WebSubnet2
+    Export: 
+      Name: !Sub "${AWS::StackName}-WebSubnet2"
+
+  WasSubnet1:
+    Description: A reference to the Was private subnet in the 1st Availability Zone
+    Value: !Ref WasSubnet1
+    Export: 
+      Name: !Sub "${AWS::StackName}-WasSubnet1"
+
+  WasSubnet2:
+    Description: A reference to the Was private subnet in the 2nd Availability Zone
+    Value: !Ref WasSubnet2
+    Export: 
+      Name: !Sub "${AWS::StackName}-WasSubnet2"
+
+  DbSubnet1:
+    Description: A reference to the DB private subnet in the 1st Availability Zone
+    Value: !Ref DbSubnet1
+    Export: 
+      Name: !Sub "${AWS::StackName}-DbSubnet1"
+
+  DbSubnet2:
+    Description: A reference to the DB private subnet in the 2nd Availability Zone
+    Value: !Ref DbSubnet2
+    Export: 
+      Name: !Sub "${AWS::StackName}-DbSubnet2"
+      
+  MetatronSubnet1:
+    Description: A reference to the Metatron private subnet in the 1st Availability Zone
+    Value: !Ref MetatronSubnet1
+    Export: 
+      Name: !Sub "${AWS::StackName}-MetatronSubnet1"
+
+  MetatronSubnet2:
+    Description: A reference to the Metatron private subnet in the 2nd Availability Zone
+    Value: !Ref MetatronSubnet2
+    Export: 
+      Name: !Sub "${AWS::StackName}-MetatronSubnet2"
+
+  MetatronSubnet3:
+    Description: A reference to the Metatron private subnet in the 3rd Availability Zone
+    Value: !Ref MetatronSubnet3
+    Export: 
+      Name: !Sub "${AWS::StackName}-MetatronSubnet3"
