@@ -14,7 +14,7 @@ Mappings:
       Db:        db.m5.large
       Master:    r5.large
       Query:     r5.xlarge
-      Data:      i3.large
+      Data:      r5.xlarge
       Zookeeper: t3.micro
       Bastion:   t3.micro     
     stage:
@@ -23,7 +23,7 @@ Mappings:
       Db:        db.m5.large
       Master:    r5.large
       Query:     r5.xlarge
-      Data:      i3.large
+      Data:      r5.xlarge
       Zookeeper: t3.micro
       Bastion:   t3.micro
     prod:
@@ -32,7 +32,7 @@ Mappings:
       Db:        db.m5.xlarge
       Master:    r5.xlarge
       Query:     r5.2xlarge
-      Data:      i3.4xlarge
+      Data:      r5.2xlarge
       Zookeeper: t3.micro
       Bastion:   t3.micro
 
